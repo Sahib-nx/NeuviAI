@@ -77,6 +77,7 @@ export const SignInView = () => {
                 onError: ({ error }) => {
                     setPending(false)
                     setError(error.message);
+                    console.log(error.message)
                 },
 
             }
