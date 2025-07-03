@@ -91,6 +91,6 @@ export const CallLobby = ({ onJoin }: Props) => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
