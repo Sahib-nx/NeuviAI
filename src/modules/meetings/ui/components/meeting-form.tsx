@@ -13,6 +13,7 @@ import { useState } from "react";
 import { CommandSelect } from "@/components/command-select";
 import { GeneratedAvatar } from "@/components/generated-avatar";
 import { NewAgentDialog } from "@/modules/agents/ui/components/new-agent-dialog";
+import { useRouter } from "next/navigation";
 
 interface MeetingFormProps {
     onSuccess?: (id?: string) => void;
@@ -26,6 +27,7 @@ export const MeetingForm = ({
     onCancel,
     initialValues,
 }: MeetingFormProps) => {
+    const router = useRouter();
     const trpc = useTRPC();
     const queryClient = useQueryClient();
 
@@ -45,13 +47,16 @@ export const MeetingForm = ({
                 await queryClient.invalidateQueries(
                     trpc.meetings.getMany.queryOptions({}),
                 );
-
-                //Todo: Invalidate free tier usage
+                await queryClient.invalidateQueries(
+                    trpc.preminum.getFreeUsage.queryOptions(),
+                );
                 onSuccess?.(data.id);
             },
             onError: (error) => {
                 toast.error(error.message);
-                //TODO:check if error code is forbidden, redirect to /upgrade 
+                if (error.data?.code === "FORBIDDEN") {
+                    router.push("/upgrade");
+                }
             },
         })
     );
@@ -72,7 +77,6 @@ export const MeetingForm = ({
             },
             onError: (error) => {
                 toast.error(error.message);
-                //TODO:check if error code is forbidden, redirect to /upgrade 
             },
         })
     );
@@ -98,7 +102,7 @@ export const MeetingForm = ({
 
     return (
         <>
-        <NewAgentDialog open={openNewAgentDialog} onOpenChange={setOpenNewAgentDialog} />
+            <NewAgentDialog open={openNewAgentDialog} onOpenChange={setOpenNewAgentDialog} />
             <Form {...form}>
                 <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)} >
                     <FormField
