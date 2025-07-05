@@ -1,5 +1,5 @@
 import { useTRPC } from "@/trpc/client";
-import { AgentGetOne } from "../../types";
+import { AgentsGetOne } from "../../types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { z } from "zod"
@@ -11,11 +11,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface AgentFormProps {
     onSuccess?: () => void;
     onCancel?: () => void;
-    initialValues?: AgentGetOne;
+    initialValues?: AgentsGetOne;
 };
 
 
@@ -24,6 +25,7 @@ export const AgentForm = ({
     onCancel,
     initialValues,
 }: AgentFormProps) => {
+    const router = useRouter();
     const trpc = useTRPC();
     const queryClient = useQueryClient();
 
@@ -34,12 +36,17 @@ export const AgentForm = ({
                     trpc.agents.getMany.queryOptions({}),
                 );
 
-                //Todo: Invalidate free tier usage
+                await queryClient.invalidateQueries(
+                    trpc.preminum.getFreeUsage.queryOptions(),
+                );
+
                 onSuccess?.();
             },
             onError: (error) => {
                 toast.error(error.message);
-                //TODO:check if error code is forbidden, redirect to /upgrade 
+               if(error.data?.code === "FORBIDDEN") {
+                router.push("/upgrade");
+               } 
             },
         })
     );
@@ -60,7 +67,6 @@ export const AgentForm = ({
             },
             onError: (error) => {
                 toast.error(error.message);
-                //TODO:check if error code is forbidden, redirect to /upgrade 
             },
         })
     );
@@ -78,7 +84,7 @@ export const AgentForm = ({
 
     const onSubmit = (values: z.infer<typeof agentsInsertSchema>) => {
         if (isEdit) {
-           updateAgent.mutate({ ...values, id: initialValues.id});
+            updateAgent.mutate({ ...values, id: initialValues.id });
         } else {
             createAgent.mutate(values);
         }
