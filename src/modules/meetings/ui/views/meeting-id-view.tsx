@@ -40,7 +40,7 @@ export const MeetingIdView = ({ meetingId }: Props) => {
             onSuccess: async () => {
                 await queryClient.invalidateQueries(trpc.meetings.getMany.queryOptions({}));
                 await queryClient.invalidateQueries(
-                    trpc.preminum.getFreeUsage.queryOptions(),
+                    trpc.premium.getFreeUsage.queryOptions(),
                 );
                 router.push("/meetings");
             },
@@ -85,8 +85,6 @@ export const MeetingIdView = ({ meetingId }: Props) => {
                 {isActive && <ActiveState meetingId={meetingId} />}
                 {isUpcoming && <UpcomingState
                     meetingId={meetingId}
-                    onCancelMeeting={() => { }}
-                    isCancelling={false}
                 />}
             </div>
         </>
