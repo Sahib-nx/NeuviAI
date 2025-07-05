@@ -37,7 +37,7 @@ export const AgentForm = ({
                 );
 
                 await queryClient.invalidateQueries(
-                    trpc.preminum.getFreeUsage.queryOptions(),
+                    trpc.premium.getFreeUsage.queryOptions(),
                 );
 
                 onSuccess?.();
